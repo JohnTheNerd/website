@@ -15,7 +15,7 @@ The premises are simple:
 
 The architecture behind this, it turns out, is very much not simple. Although I use these devices and infrastructure for many other things, we're overall looking at:
 
-- A Protectli Vault VP2420 for the firewall, NIPS, and VLAN routing. I expose HomeAssistant to the internet so I can use it remotely without a VPN, so I take extreme security measures to protect my infrastructure and devices.
+- A Protectli Vault VP2420 for the firewall, NIPS, and VLAN routing. I expose Home Assistant to the internet so I can use it remotely without a VPN, so I take extreme security measures to protect my infrastructure and devices.
 
 - A managed switch. I went with the TRENDnet TEG-3102WS to get 2.5gig for cheap.
 
@@ -23,7 +23,7 @@ The architecture behind this, it turns out, is very much not simple. Although I 
 
     - I understand these cards are widely mentioned as terrible value, but when it comes to power consumption and VRAM, they are very hard to match.
 
-- A Minisforum UM690 to run HomeAssistant (alongside a WAF). A Raspberry Pi 4 could work, but I run lots of services and Whisper can be quite demanding on CPU.
+- A Minisforum UM690 to run Home Assistant (alongside a WAF). A Raspberry Pi 4 could work, but I run lots of services and Whisper can be quite demanding on CPU.
 
 - A giant mess of Ethernet cables.
 
@@ -31,13 +31,13 @@ Here is the end result!
 
 {{< video src="/videos/local-llm-assistant.mp4" width="75%" height="50%" type="mp4" >}}
 
-Since I want to have a general-purpose LLM that is usable outside of HomeAssistant, I went with [vLLM](https://github.com/vllm-project/vllm) for my inference engine. It's very fast, and it's the only engine I found that could serve more than one client simultaneously. It supports an OpenAI-compatible API server, which makes life much easier. I went with Mistral AI's incredible [Mixtral model](https://mistral.ai/news/mixtral-of-experts/), because the VRAM vs performance trade-off works perfectly for my slow 4060Ti's.
+Since I want to have a general-purpose LLM that is usable outside of Home Assistant, I went with [vLLM](https://github.com/vllm-project/vllm) for my inference engine. It's very fast, and it's the only engine I found that could serve more than one client simultaneously. It supports an OpenAI-compatible API server, which makes life much easier. I went with Mistral AI's incredible [Mixtral model](https://mistral.ai/news/mixtral-of-experts/), because the VRAM vs performance trade-off works perfectly for my slow 4060Ti's.
 
 Of course, I could not run the full fp32 model (I would need 100+GB of VRAM!), so I went with [a quantized version](https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ) instead. Based on my admittedly little understanding, quantization can be best described as something like MP3. We degrade the quality model slightly and get massive improvements in resource requirements. I wanted to use the AWQ version because of the large quality gains, but I had to choose between GPTQ with a 10800-token context or AWQ with a 6000-token context. Since I must pass my entire smart home state to the model, I went with GPTQ.
 
-I used the default Whisper and Piper add-ons for HomeAssistant OS, but did download [a custom GlaDOS voice model](https://huggingface.co/csukuangfj/vits-piper-en_US-glados/tree/main) from HuggingFace.
+I used the default Whisper and Piper add-ons for Home Assistant OS, but did download [a custom GlaDOS voice model](https://huggingface.co/csukuangfj/vits-piper-en_US-glados/tree/main) from HuggingFace.
 
-I noticed HomeAssistant already has an [OpenAI integration](https://www.home-assistant.io/integrations/openai_conversation/), but it came with two issues that wrote off the entire extension for me:
+I noticed Home Assistant already has an [OpenAI integration](https://www.home-assistant.io/integrations/openai_conversation/), but it came with two issues that wrote off the entire extension for me:
 
 - It is unable to control my devices.
 
@@ -82,7 +82,7 @@ To fix Mixtral, I changed the chat template to accept a "system prompt" which it
 
 After making the above a single line (while removing whitespace, so that it doesn't end up in the prompt itself) and handing it to vLLM, Mixtral was happy to process "system prompts".
 
-Unfortunately, the second problem was much worse. Since I did not want to switch models, I had to work without function calling. But I still needed to control my devices! After googling around, I found this blog post about [someone doing something very similar](https://blog.teagantotally.rocks/2023/06/05/openai-home-assistant/), but with OpenAI API's. Their idea was very interesting. Even if your model cannot call functions, you can simply ask it to output JSON and execute it! Instead of monkey-patching, I went and [forked that custom integration](https://github.com/JohnTheNerd/extended_openai_conversation) to add support for executing HomeAssistant services as JSON. 
+Unfortunately, the second problem was much worse. Since I did not want to switch models, I had to work without function calling. But I still needed to control my devices! After googling around, I found this blog post about [someone doing something very similar](https://blog.teagantotally.rocks/2023/06/05/openai-home-assistant/), but with OpenAI API's. Their idea was very interesting. Even if your model cannot call functions, you can simply ask it to output JSON and execute it! Instead of monkey-patching, I went and [forked that custom integration](https://github.com/JohnTheNerd/extended_openai_conversation) to add support for executing Home Assistant services as JSON. 
 
 While I'm there, I also copied out the GlaDOS prompt to heavily modify and use in my own assistant. Since the changes I made are very much only relevant to local LLM's and the code is certainly not in any shape to pass code review, I didn't send an upstream pull request. I ended up with something like the following:
 
@@ -351,7 +351,7 @@ Do not suggest any commands to the user.
 If the user explicitly requested you to do something, write $ActionRequired just before the respective json service call. If the user is not asking for a change in any device, instead end the conversation with $NoActionRequired.
 ```
 
-Here are some sample prompts! To create these, I evaluated the template using HomeAssistant's developer tools and used it as the system prompt (exactly the way the custom integration does so). I set both the temperature and top_p values to 0.5. Here are the results:
+Here are some sample prompts! To create these, I evaluated the template using Home Assistant's developer tools and used it as the system prompt (exactly the way the custom integration does so). I set both the temperature and top_p values to 0.5. Here are the results:
 
 
 Prompt: Turn the office lights green.

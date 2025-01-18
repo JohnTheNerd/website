@@ -41,7 +41,7 @@ params:
     Content: |
       {{< homeinfo >}}
       I've been messing around with just about anything that runs Linux for over a decade. I'm also a huge fan of security, automation, and all things IoT.
-      This website (and the servers it runs on) is a perfect combination of this. I host it on my own hardware, which is also responsible for things like home automation (thanks to [HomeAssistant](https://home-assistant.io)), a VPN, shared storage, backups, and so much more. It's also locked behind a WAF, IPS, and multiple forms of brute-force protection.
+      This website (and the servers it runs on) is a perfect combination of this. I host it on my own hardware, which is also responsible for things like home automation (thanks to [Home Assistant](https://home-assistant.io)), a VPN, shared storage, backups, and so much more. It's also locked behind a WAF, IPS, and multiple forms of brute-force protection.
       At work, I am responsible for maintaining our team's AWS infrastructure and security, improving our system stability, automating the boring stuff, and overall doing my best to help my colleagues.
       This blog is where I explain all the problems I had trying to set up my home infrastructure, and how I solved them. I also like to ramble a lot. I hope it helps you!
       {{< /homeinfo >}}
