@@ -17,7 +17,7 @@ It would sure be nice to have something much smarter and faster. Say, like this?
 
 Let's think about a smarter solution. To do so, let's learn more about how a language model works in the first place! NVIDIA has some [amazing documentation](https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/) about LLM inference that was incredibly helpful.
 
-Language models have two phases. These are called "prefill" and "decode". When you send a prompt to a language model, you can see both of these in action. Prefill happens before you see the _first_ token, and decode happens for _every other token_ that is output. Decode is relatively stable and the overall "slowness" caused by decode is merely linear based on how much the LLM output. Streaming to HomeAssistant would really help reduce perceived slowdown by decode, but I couldn't really figure out the HomeAssistant codebase.
+Language models have two phases. These are called "prefill" and "decode". When you send a prompt to a language model, you can see both of these in action. Prefill happens before you see the _first_ token, and decode happens for _every other token_ that is output. Decode is relatively stable and the overall "slowness" caused by decode is merely linear based on how much the LLM output. Streaming to Home Assistant would really help reduce perceived slowdown by decode, but I couldn't really figure out the Home Assistant codebase.
 
 Let's focus on prefill for now, as I have discovered that it was taking a majority of the inference time. If you use language models often, you may have noticed that prefill scales really badly for very long contexts. This is because prefill latency increases _quadratically_ based on the context length. [Here is an interesting paper](https://arxiv.org/abs/2405.08944) that explains all the challenges of having very large context sizes. Since we are passing the entire smart home state to the LLM, prefill times are quite bad. Furthermore, Llama 3 has an 8k context size, and I was already at 60% before I even thought of adding weather information! Based on my previous experiences, the worst part of CPU inference with llama.cpp is always prefill, so I can only imagine how bad this would be without GPUs.
 
@@ -35,7 +35,7 @@ After some experimentation, I came up with these categories:
 
 - The weather forecast for the next week. The title is a hardcoded message.
 
-- One category per area defined in HomeAssistant. The title is a list of all entities (name and ID, but not state) attached to all devices in that area.
+- One category per area defined in Home Assistant. The title is a list of all entities (name and ID, but not state) attached to all devices in that area.
 
 - One category for the shopping list. The title is the entire shopping list.
 
@@ -43,7 +43,7 @@ After some experimentation, I came up with these categories:
 
 - One category for all media players and what they are playing. The title is the list of media players without what they are playing.
 
-- Two other categories for laundry and color loop, which are very custom to my HomeAssistant setup (and hence are disabled in the sample configuration).
+- Two other categories for laundry and color loop, which are very custom to my Home Assistant setup (and hence are disabled in the sample configuration).
 
 And, well, see the results for yourself!
 
